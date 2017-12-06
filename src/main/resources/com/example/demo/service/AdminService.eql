@@ -1,0 +1,6 @@
+--[findUserByName]
+select userId 'userId',
+       userName 'userName'
+from user
+where userName=#userName#
+and userPwd=#userPwd#

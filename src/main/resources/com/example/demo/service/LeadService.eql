@@ -1,0 +1,203 @@
+--[getAllLead]
+SELECT
+    cast(l.id as char(20)) 'id',
+	l. NAME 'name',
+	l.interest 'interest',
+	l.principal 'principal',
+	DATE_FORMAT(l.startTime,'%Y.%m.%d') 'startTime',
+	DATE_FORMAT(l.endTime,'%Y.%m.%d') 'endTime',
+	l.RENEW 'renew',
+	l.remark 'remark',
+    l.valid 'valid',
+    l.totalPrincipal 'totalPrincipal',
+    l.interestType 'interestType',
+    l.cycle 'cycle'
+FROM
+	leadinfo l
+    -- isNotEmpty valid
+    where l.valid = #valid#
+    -- end
+    -- isEmpty valid
+    where l.valid = '1'
+    -- end
+    -- isNotEmpty interestType
+    and l.interestType = #interestType#
+    -- end
+    -- isNotEmpty name
+    and l.name like concat('%',#name#,'%')
+    -- end
+    order by l.startTime
+
+
+--[settleLead]
+UPDATE leadinfo
+SET valid = '0',
+updateTime = now()
+ interestType == "1"
+,endTime=now()
+--end
+WHERE
+	id =#id#
+
+--[findLeadById]
+select interestType 'interestType',
+  cast(id as char(20)) 'id'
+ from leadInfo
+ where id=#1#
+
+--[saveLeadUser]
+INSERT INTO leadinfo (
+	id,
+	name,
+	interest,
+	startTime,
+	endTime,
+	valid,
+	renew,
+	principal,
+	totalPrincipal,
+	createTime,
+	updateTime,
+	interestType,
+	remark,
+	cycle
+)
+VALUES
+	(
+		#id#,
+		#name#,
+		#interest#,
+		str_to_date(#startTime#,'%Y-%m-%d %H:%i:%s'),
+		str_to_date(#endTime#,'%Y-%m-%d %H:%i:%s'),
+		'1',
+		'0',
+		#principal#,
+		#totalPrincipal#,
+		now(),
+		now(),
+		#interestType#,
+		#remark#,
+		#cycle#
+	)
+
+--[getAllLeadWithValid]
+SELECT
+    cast(l.id as char(20)) 'id',
+	l. NAME 'name',
+	l.interest 'interest',
+	l.principal 'principal',
+	l.cycle 'cycle',
+	DATE_FORMAT(l.startTime,'%Y-%m-%d') 'startTime',
+	DATE_FORMAT(l.endTime,'%Y-%m-%d') 'endTime',
+	l.RENEW 'renew',
+	l.remark 'remark',
+    l.valid 'valid',
+    l.totalPrincipal 'totalPrincipal',
+    l.interestType 'interestType'
+FROM
+	leadinfo l
+
+--[queryLeadWithTime]
+SELECT
+    cast(l.id as char(20)) 'id',
+	l. NAME 'name',
+	l.interest 'interest',
+	l.principal 'principal',
+    DATE_FORMAT(l.startTime,'%Y-%m-%d') 'startTime',
+    DATE_FORMAT(l.endTime,'%Y-%m-%d') 'endTime',
+	l.RENEW 'renew',
+	l.remark 'remark',
+    l.valid 'valid',
+    l.totalPrincipal 'totalPrincipal',
+    l.interestType 'interestType'
+FROM
+	leadinfo l
+	where l.endTime>=str_to_date(#firstDayOfMonth#,'%Y-%m-%d')
+	and startTime < STR_TO_DATE(#firstDayOfMonth#,'%Y-%m-%d')
+
+--[insertPeriods]
+insert into periods
+values
+-- for item=period index=index collection=periodList separator=,
+(#period.id#,#period.num#,STR_TO_DATE(#period.numStartTime#,'%Y-%m-%d'),STR_TO_DATE(#period.numEndTime#,'%Y-%m-%d'),'0','',#period.isLastNum#,#period.totalNum#)
+-- end
+
+--[findPeriodById]
+select p.num 'num',DATE_FORMAT(p.numStartTime,'%Y.%m.%d') 'numStartTime',
+DATE_FORMAT(p.numEndTime, '%Y.%m.%d') 'numEndTime',
+ p.payTag 'payTag',
+ p.payNo 'payNo',
+ p.isLastNum 'isLastNum',
+ lf.interest 'interest',
+ lf.totalprincipal 'totalPrincipal',
+ cast(lf.id as char(20)) 'id',
+ lf.interestType 'interestType',
+ lf.cycle 'cycle'
+FROM
+	periods p,
+	leadinfo lf
+WHERE
+	p.id = lf.id
+	and p.id=#id#
+
+--[updatePayNum]
+update periods set payNo=#payNo#,
+payTag ='1'
+--if interestType == "1"
+,numEndTime=now()
+--end
+where id=#id#
+and num=#num#
+
+--[periodList]
+SELECT
+    cast(l.id as char(20)) 'id',
+	l. NAME 'name',
+	l.interest 'interest',
+	l.principal 'principal',
+	DATE_FORMAT(p.numStartTime,'%Y-%m-%d') 'numStartTime',
+	DATE_FORMAT(p.numEndTime,'%Y-%m-%d') 'numEndTime',
+	l.cycle 'cycle',
+	p.isLastNum 'isLastNum',
+	l.remark 'remark',
+    l.totalPrincipal 'totalPrincipal',
+    l.interestType 'interestType',
+    p.num 'num',
+    p.payTag 'payTag',
+    p.totalNum 'totalNum',
+    p.payNo 'payNo'
+FROM leadinfo l,periods p
+where l.id=p.id
+-- isNotEmpty payTag
+and p.payTag=#payTag#
+--end
+-- isEmpty payTag
+and p.payTag='0'
+--end
+-- isNotEmpty overDue
+and p.numEndTime <= now()
+--end
+ -- isNotEmpty name
+    and l.name like concat('%',#name#,'%')
+ -- end
+ -- isNotEmpty toTime
+ and p.numEndTime <= DATE_ADD(now(),INTERVAL 7 DAY)
+ and p.numEndTime > now()
+-- end
+order by p.numEndTime
+
+--[getIncome]
+SELECT
+	l.id 'id',
+	l.interest 'interest',
+	l.interestType 'interestType',
+	l.totalprincipal 'totalPrincipal',
+	l.cycle 'cycle',
+	 DATE_FORMAT(p.numStartTime,'%Y-%m-%d') 'startTime',
+        DATE_FORMAT(p.numEndTime,'%Y-%m-%d') 'endTime',
+        p.payTag 'payTag'
+FROM
+	leadinfo l,
+	periods p
+WHERE
+	l.id = p.id
