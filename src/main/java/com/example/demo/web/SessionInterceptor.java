@@ -2,6 +2,7 @@ package com.example.demo.web;
 
 import com.alibaba.druid.support.logging.Log;
 import com.alibaba.druid.support.logging.LogFactory;
+import com.example.demo.dao.AuthContext;
 import com.example.demo.exception.TokenInvalidException;
 import com.example.demo.utils.MapUtils;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             log.debug("拦住了");
             throw new TokenInvalidException();
         }
+        AuthContext.setUserId(((Map) httpServletRequest.getSession().getAttribute("login")).get("userId").toString());
         return true;
     }
 

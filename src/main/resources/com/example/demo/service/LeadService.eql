@@ -14,11 +14,12 @@ SELECT
     l.cycle 'cycle'
 FROM
 	leadinfo l
+	where userId=#userId#
     -- isNotEmpty valid
-    where l.valid = #valid#
+    and l.valid = #valid#
     -- end
     -- isEmpty valid
-    where l.valid = '1'
+    and l.valid = '1'
     -- end
     -- isNotEmpty interestType
     and l.interestType = #interestType#
@@ -33,7 +34,7 @@ FROM
 UPDATE leadinfo
 SET valid = '0',
 updateTime = now()
- interestType == "1"
+-- if interestType == "1"
 ,endTime=now()
 --end
 WHERE
@@ -44,6 +45,7 @@ select interestType 'interestType',
   cast(id as char(20)) 'id'
  from leadInfo
  where id=#1#
+ and userId=#2#
 
 --[saveLeadUser]
 INSERT INTO leadinfo (
@@ -60,7 +62,8 @@ INSERT INTO leadinfo (
 	updateTime,
 	interestType,
 	remark,
-	cycle
+	cycle,
+	userId
 )
 VALUES
 	(
@@ -77,7 +80,8 @@ VALUES
 		now(),
 		#interestType#,
 		#remark#,
-		#cycle#
+		#cycle#,
+		#userId#
 	)
 
 --[getAllLeadWithValid]
@@ -96,6 +100,7 @@ SELECT
     l.interestType 'interestType'
 FROM
 	leadinfo l
+	where userId=#1#
 
 --[queryLeadWithTime]
 SELECT
@@ -139,6 +144,7 @@ FROM
 WHERE
 	p.id = lf.id
 	and p.id=#id#
+	and lf.userId=#userId#
 
 --[updatePayNum]
 update periods set payNo=#payNo#,
@@ -168,6 +174,7 @@ SELECT
     p.payNo 'payNo'
 FROM leadinfo l,periods p
 where l.id=p.id
+and l.userId=#userId#
 -- isNotEmpty payTag
 and p.payTag=#payTag#
 --end
@@ -201,3 +208,4 @@ FROM
 	periods p
 WHERE
 	l.id = p.id
+	and user=#1#

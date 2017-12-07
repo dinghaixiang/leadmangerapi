@@ -1,5 +1,5 @@
 --[findUserByName]
-select userId 'userId',
+select cast(userId as char(20)) 'userId',
        userName 'userName'
 from user
 where userName=#userName#

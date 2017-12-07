@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dao.AuthContext;
 import com.example.demo.utils.MapUtils;
 import com.example.demo.utils.eql.Dql;
 import org.n3r.eql.EqlPage;
@@ -20,22 +21,24 @@ public class LeadService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     public List<Map> getAllLead(EqlPage page) {
-        return new Dql().select("getAllLead").limit(page).execute();
+        return new Dql().select("getAllLead").params(MapUtils.of("userId", AuthContext.getUserId())).limit(page).execute();
     }
 
     public List<Map> getLeadByCondition(Map map, EqlPage page) {
+        map.put("userId",AuthContext.getUserId());
         return new Dql().select("getAllLead").params(map).limit(page).execute();
     }
 
     public Integer settle(String id) {
-        Map map=new Dql().selectFirst("findLeadById").params(id).execute();
-        return new Dql().select("settleLead").params(map).execute();
+        Map map=new Dql().selectFirst("findLeadById").params(id,AuthContext.getUserId()).execute();
+        return new Dql().update("settleLead").params(map).execute();
     }
 
     public Integer save(Map map) {
         List periodList = new ArrayList();
         long id = Id.next();
         map.put("id", id);
+        map.put("userId",AuthContext.getUserId());
         if ("0".equals(MapUtils.getStr(map, "interestType"))) {
             int range = betweenMonth(MapUtils.getStr(map, "startTime"), MapUtils.getStr(map, "endTime"));
             String startTime = MapUtils.getStr(map, "startTime");
@@ -70,7 +73,7 @@ public class LeadService {
     }
 
     public Map income() {
-        List<Map> leadUserList = new Dql().select("getAllLeadWithValid").execute();
+        List<Map> leadUserList = new Dql().select("getAllLeadWithValid").params(AuthContext.getUserId()).execute();
         Integer totalInvest = 0, mineTotalInvest = 0, totalInvestComed = 0, mineTotalInvestComed = 0;
         for (Map leadUser : leadUserList) {
             totalInvest += MapUtils.getInt(leadUser, "totalPrincipal");
@@ -105,7 +108,7 @@ public class LeadService {
     }
 
     public Map haveIncomed() {
-        List<Map> list = new Dql().select("getIncome").execute();
+        List<Map> list = new Dql().select("getIncome").params(AuthContext.getUserId()).execute();
         double haveIncome = 0.0;
         double totalIncome = 0.0;
         for (Map map : list) {
@@ -134,7 +137,7 @@ public class LeadService {
     }
 
     public Map monthIncome() {
-        List<Map> periodList = new Dql().select("getIncome").execute();
+        List<Map> periodList = new Dql().select("getIncome").params(AuthContext.getUserId()).execute();
         List list = new ArrayList();
         List list2=new ArrayList();
         for (int i = -9; i < 4; i++) {
@@ -149,7 +152,7 @@ public class LeadService {
     }
 
     private Map currentMonth() {
-        List<Map> list = new Dql().select("getIncome").execute();
+        List<Map> list = new Dql().select("getIncome").params(AuthContext.getUserId()).execute();
         double haveIncome = 0.0;
         double totalIncome = 0.0;
         for (Map map : list) {
@@ -229,23 +232,6 @@ public class LeadService {
         return MapUtils.of("firstDayOfMonth", sdf.format(firstDayOfMonth), "lastDayOfMonth", sdf.format(lastDayOfMonth));
     }
 
-    public double computeMonthIncome(List<Map> list) {
-        double monthIncome = 0.0;
-        for (Map leadUser : list) {
-            double interest = Double.valueOf(MapUtils.getStr(leadUser, "interest"));
-            double totalPrincipal = Double.valueOf(MapUtils.getStr(leadUser, "totalPrincipal"));
-            if ("0".equals(MapUtils.getStr(leadUser, "interestType"))) {
-                monthIncome += interest * totalPrincipal / 100;
-            } else if ("1".equals(MapUtils.getStr(leadUser, "interestType"))) {
-                Date startTime = parse(MapUtils.getStr(leadUser, "startTime"));
-                Date endTime = parse(MapUtils.getStr(leadUser, "endTime"));
-                Long time = endTime.getTime() - startTime.getTime();
-                int range = (int) (time / 24 / 3600 / 1000);
-                monthIncome += range * interest * totalPrincipal / 100;
-            }
-        }
-        return monthIncome;
-    }
 
     private int betweenMonth(String startTimeString, String endTimeString) {
         Date endTime = parse(endTimeString);
@@ -282,6 +268,7 @@ public class LeadService {
     }
 
     public List<Map> getPeriodById(Map param) {
+        param.put("userId",AuthContext.getUserId());
         List<Map> periods=new Dql().select("findPeriodById").params(param).execute();
         periods.stream().forEach(map->{
             double totalPrincipal=(double)map.get("totalPrincipal");
@@ -320,7 +307,7 @@ public class LeadService {
     }
 
     public List<Map> periodListInit(EqlPage page) {
-        List<Map> leadList = new Dql().select("periodList").limit(page).execute();
+        List<Map> leadList = new Dql().select("periodList").params(MapUtils.of("userId",AuthContext.getUserId())).limit(page).execute();
         leadList.stream().forEach(map->{
             double totalPrincipal=(double)map.get("totalPrincipal");
             double interest= (double)map.get("interest");
@@ -352,11 +339,12 @@ public class LeadService {
     }
 
     public int getOverDueNum() {
-        List<Map> overDueleadList = new Dql().select("periodList").params(MapUtils.of("overDue", "1")).execute();
+        List<Map> overDueleadList = new Dql().select("periodList").params(MapUtils.of("overDue", "1","userId",AuthContext.getUserId())).execute();
         return overDueleadList.size();
     }
 
     public List<Map> getOverDue(Map param, EqlPage page) {
+        param.put("userId",AuthContext.getUserId());
         List<Map> leadList = new Dql().select("periodList").params(param).limit(page).execute();
         leadList.stream().forEach(map->{
             double totalPrincipal=(double)map.get("totalPrincipal");
@@ -389,7 +377,7 @@ public class LeadService {
     }
 
     public int getToTimeNum() {
-        List<Map> toTimeleadList = new Dql().select("periodList").params(MapUtils.of("toTime", "1")).execute();
+        List<Map> toTimeleadList = new Dql().select("periodList").params(MapUtils.of("toTime", "1","userId",AuthContext.getUserId())).execute();
         return toTimeleadList.size();
     }
 }
