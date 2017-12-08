@@ -208,4 +208,4 @@ FROM
 	periods p
 WHERE
 	l.id = p.id
-	and user=#1#
+	and userId=#1#
