@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property name="logs-folder" value="logs"/>
-    <property name="contextName" value="afuos-admin-server"/>
+    <property name="contextName" value="lead-api"/>
     <!--<insertFromJNDI env-entry-name="java:comp/env/logback/contextName" as="contextName"/>-->
     <contextName>${contextName}</contextName>
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">

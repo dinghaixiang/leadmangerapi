@@ -301,7 +301,7 @@ public class LeadService {
     }
 
     public Integer updatePayNo(Map map) {
-        Map period=new Dql().selectFirst("findLeadById").params(map.get("id")).execute();
+        Map period=new Dql().selectFirst("findLeadById").params(map.get("id"),AuthContext.getUserId()).execute();
         map.put("interestType",MapUtils.getStr(period,"interestType"));
         return new Dql().update("updatePayNum").params(map).execute();
     }
