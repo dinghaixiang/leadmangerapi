@@ -303,7 +303,19 @@ public class LeadService {
     public Integer updatePayNo(Map map) {
         Map period=new Dql().selectFirst("findLeadById").params(map.get("id"),AuthContext.getUserId()).execute();
         map.put("interestType",MapUtils.getStr(period,"interestType"));
-        return new Dql().update("updatePayNum").params(map).execute();
+        EqlTran tran=new Dql().newTran();
+        try {
+            tran.start();
+            new Dql().useTran(tran).update("updatePayNum").params(map).execute();
+            if("1".equals(map.get("type"))){
+                new Dql().update("settleLead").params(map).execute();
+            }
+            tran.commit();
+            return 1;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public List<Map> periodListInit(EqlPage page) {
