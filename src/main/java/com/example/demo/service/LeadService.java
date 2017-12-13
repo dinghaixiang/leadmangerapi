@@ -9,6 +9,7 @@ import org.n3r.eql.util.Closes;
 import org.n3r.idworker.Id;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -19,6 +20,7 @@ import java.util.*;
 @Service
 public class LeadService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    private DecimalFormat df = new DecimalFormat("#.00");
 
     public List<Map> getAllLead(EqlPage page) {
         return new Dql().select("getAllLead").params(MapUtils.of("userId", AuthContext.getUserId())).limit(page).execute();
@@ -320,34 +322,7 @@ public class LeadService {
 
     public List<Map> periodListInit(EqlPage page) {
         List<Map> leadList = new Dql().select("periodList").params(MapUtils.of("userId",AuthContext.getUserId())).limit(page).execute();
-        leadList.stream().forEach(map->{
-            double totalPrincipal=(double)map.get("totalPrincipal");
-            double interest= (double)map.get("interest");
-            String isLastNum =MapUtils.getStr(map,"isLastNum");
-            if("0".equals(MapUtils.getStr(map,"interestType"))){
-                double income=totalPrincipal*interest/100;
-                if("1".equals(isLastNum)){
-                    income+=totalPrincipal;
-                }
-                map.put("income",income);
-            }else if("1".equals(MapUtils.getStr(map,"interestType"))){
-                Date startTime = parse(MapUtils.getStr(map, "numStartTime"));
-                Date endTime = parse(MapUtils.getStr(map, "numEndTime"));
-                Long time = endTime.getTime() - startTime.getTime();
-                int range = (int) (time / 24 / 3600 / 1000);
-                double income=totalPrincipal*interest*range/100;
-                if("1".equals(isLastNum)){
-                    income+=totalPrincipal;
-                }
-                map.put("income",income);
-            }else if("2".equals(MapUtils.getStr(map,"interestType"))){
-                int cycle=MapUtils.getInt(map,"cycle");
-                double income=totalPrincipal*interest*7/100;
-                income+=totalPrincipal/cycle;
-                map.put("income",income);
-            }
-        });
-        return leadList;
+        return addIncomeElm(leadList);
     }
 
     public int getOverDueNum() {
@@ -358,31 +333,38 @@ public class LeadService {
     public List<Map> getOverDue(Map param, EqlPage page) {
         param.put("userId",AuthContext.getUserId());
         List<Map> leadList = new Dql().select("periodList").params(param).limit(page).execute();
+        return addIncomeElm(leadList);
+    }
+
+    private List<Map> addIncomeElm(List<Map> leadList){
         leadList.stream().forEach(map->{
             double totalPrincipal=(double)map.get("totalPrincipal");
             double interest= (double)map.get("interest");
             String isLastNum =MapUtils.getStr(map,"isLastNum");
             if("0".equals(MapUtils.getStr(map,"interestType"))){
                 double income=totalPrincipal*interest/100;
+                map.put("currentInterest",income);
                 if("1".equals(isLastNum)){
                     income+=totalPrincipal;
                 }
-                map.put("income",income);
+                map.put("income",df.format(income));
             }else if("1".equals(MapUtils.getStr(map,"interestType"))){
                 Date startTime = parse(MapUtils.getStr(map, "numStartTime"));
                 Date endTime = parse(MapUtils.getStr(map, "numEndTime"));
                 Long time = endTime.getTime() - startTime.getTime();
                 int range = (int) (time / 24 / 3600 / 1000);
                 double income=totalPrincipal*interest*range/100;
+                map.put("currentInterest",income);
                 if("1".equals(isLastNum)){
                     income+=totalPrincipal;
                 }
-                map.put("income",income);
+                map.put("income",df.format(income));
             }else if("2".equals(MapUtils.getStr(map,"interestType"))){
                 int cycle=MapUtils.getInt(map,"cycle");
                 double income=totalPrincipal*interest*7/100;
+                map.put("currentInterest",income);
                 income+=totalPrincipal/cycle;
-                map.put("income",income);
+                map.put("income",df.format(income));
             }
         });
         return leadList;
