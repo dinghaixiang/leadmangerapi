@@ -27,7 +27,7 @@ FROM
     -- isNotEmpty name
     and l.name like concat('%',#name#,'%')
     -- end
-    order by l.startTime
+    order by l.createTime
 
 
 --[settleLead]
@@ -209,3 +209,21 @@ FROM
 WHERE
 	l.id = p.id
 	and userId=#1#
+
+--[queryCurrentMonthInvest]
+SELECT
+	principal 'principal',
+  totalprincipal 'totalPrincipal',
+  valid 'valid'
+FROM
+	leadinfo
+WHERE
+-- if type == "0"
+	endTime >= DATE_FORMAT(#firstDayOfMonth#, '%Y-%m-%d')
+AND endTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
+-- end
+-- if type == "1"
+   startTime >= DATE_FORMAT(#firstDayOfMonth#, '%Y-%m-%d')
+   AND startTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
+-- end
+and userId=#userId#

@@ -15,6 +15,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.example.demo.utils.MapUtils.getInt;
+
 /**
  * Created by beck on 2017/11/20.
  */
@@ -53,7 +55,9 @@ public class LeadService {
         } else if ("1".equals(MapUtils.getStr(map, "interestType"))) {
             periodList.add(MapUtils.of("id", id, "num", 1, "numStartTime", MapUtils.getStr(map, "startTime"), "numEndTime", MapUtils.getStr(map, "endTime"), "isLastNum", "1", "totalNum", "1"));
         }else if("2".equals(MapUtils.getStr(map,"interestType"))){
-            int cycle = MapUtils.getInt(map,"cycle");
+            int cycle = getInt(map, "cycle");
+            map.put("startTime", sdf.format(new Date()));
+            map.put("endTime", relatveDay(new Date(), cycle * 7));
             Date now=new Date();
             for(int i=0;i<cycle;i++){
                 String isLastNum = i == cycle - 1 ? "1" : "0";
@@ -80,15 +84,15 @@ public class LeadService {
         List<Map> leadUserList = new Dql().select("getAllLeadWithValid").params(AuthContext.getUserId()).execute();
         Integer totalInvest = 0, mineTotalInvest = 0, totalInvestComed = 0, mineTotalInvestComed = 0;
         for (Map leadUser : leadUserList) {
-            totalInvest += MapUtils.getInt(leadUser, "totalPrincipal");
-            mineTotalInvest += MapUtils.getInt(leadUser, "principal");
+            totalInvest += getInt(leadUser, "totalPrincipal");
+            mineTotalInvest += getInt(leadUser, "principal");
             if ("0".equals(MapUtils.getStr(leadUser, "valid"))) {
-                totalInvestComed += MapUtils.getInt(leadUser, "totalPrincipal");
-                mineTotalInvestComed += MapUtils.getInt(leadUser, "principal");
+                totalInvestComed += getInt(leadUser, "totalPrincipal");
+                mineTotalInvestComed += getInt(leadUser, "principal");
             }
         }
         Map map = haveIncomed();
-        return MapUtils.of("totalInvest", totalInvest,
+        Map needMap= MapUtils.of("totalInvest", totalInvest,
                 "mineTotalInvest", mineTotalInvest,
                 "totalInvestComed", totalInvestComed,
                 "mineTotalInvestComed", mineTotalInvestComed,
@@ -97,12 +101,13 @@ public class LeadService {
                 "monthIncomed", monthIncome().get("currentMonthIncomeHaved"),
                 "haveIncomed", map.get("haveIncomed"),
                 "currentMonthIncome",currentMonth().get("currentMonthIncome"),
-                "currentMonthIncomeHaved",currentMonth().get("currentMonthIncomeHaved")
+                "currentMonthIncomeHaved", currentMonth().get("currentMonthIncomeHaved")
                 );
+        needMap.putAll(queryCurrentMonthInvest());
+        return needMap;
     }
 
     private Date parse(String str) {
-        sdf = new SimpleDateFormat("yyyy-MM-dd");
         try {
             return sdf.parse(str);
         } catch (ParseException e) {
@@ -225,7 +230,6 @@ public class LeadService {
     }
 
     private Map getFirstAndEndOfMonth(Date date) {
-        sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -252,14 +256,12 @@ public class LeadService {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(parse(relatveMonth));
         calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) + offset);
-        sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(calendar.getTime());
     }
     private String relatveDay(Date date,int offset){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + offset);
-        sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(calendar.getTime());
     }
 
@@ -267,7 +269,6 @@ public class LeadService {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(parse(relatveDay));
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + offset);
-        sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(calendar.getTime());
     }
 
@@ -295,7 +296,7 @@ public class LeadService {
                 }
                 map.put("income",income);
             }else if("2".equals(MapUtils.getStr(map,"interestType"))){
-                int cycle=MapUtils.getInt(map,"cycle");
+                int cycle = getInt(map, "cycle");
                 double income=totalPrincipal*interest*7/100;
                 income+=totalPrincipal/cycle;
                 map.put("income",income);
@@ -366,7 +367,7 @@ public class LeadService {
                 }
                 map.put("income",df.format(income));
             }else if("2".equals(MapUtils.getStr(map,"interestType"))){
-                int cycle=MapUtils.getInt(map,"cycle");
+                int cycle = getInt(map, "cycle");
                 double income=totalPrincipal*interest*7/100;
                 map.put("currentInterest",income);
                 income+=totalPrincipal/cycle;
@@ -379,5 +380,37 @@ public class LeadService {
     public int getToTimeNum() {
         List<Map> toTimeleadList = new Dql().select("periodList").params(MapUtils.of("toTime", "1","userId",AuthContext.getUserId())).execute();
         return toTimeleadList.size();
+    }
+
+
+    public Map queryCurrentMonthInvest() {
+        Map map = getFirstAndEndOfMonth(new Date());
+        map.put("type", "0");
+        map.put("userId",AuthContext.getUserId());
+        int currentMonthInvestComeing = 0, currentMonthTotalInvestComeing = 0,//当月应收
+                currentMonthInvestComed = 0, currentMonthTotalInvestComed = 0,//当月实收
+                currentMonthInvest = 0, currentMonthTotalInvest = 0;//当月新增投资
+        List<Map> list = new Dql().select("queryCurrentMonthInvest").params(map).execute();//当月应收回本金
+        map.put("type", "1");
+        List<Map> list2 = new Dql().select("queryCurrentMonthInvest").params(map).execute();//当月投资本金
+        for (Map monthInvest : list) {
+            if ("0".equals(MapUtils.getStr(monthInvest, "valid"))) {
+                currentMonthInvestComed += MapUtils.getInt(monthInvest, "principal");
+                currentMonthTotalInvestComed += MapUtils.getInt(monthInvest, "totalPrincipal");
+            }
+            currentMonthInvestComeing += MapUtils.getInt(monthInvest, "principal");
+            currentMonthTotalInvestComeing += MapUtils.getInt(monthInvest, "totalPrincipal");
+        }
+        for (Map monthInvest : list2) {
+            currentMonthInvest += MapUtils.getInt(monthInvest, "principal");
+            currentMonthTotalInvest += MapUtils.getInt(monthInvest, "totalPrincipal");
+        }
+        return MapUtils.of("currentMonthInvestComeing",currentMonthInvestComeing,
+                "currentMonthTotalInvestComeing",currentMonthTotalInvestComeing,
+                "currentMonthInvestComed",currentMonthInvestComed,
+                "currentMonthTotalInvestComed",currentMonthTotalInvestComed,
+                "currentMonthInvest",currentMonthInvest,
+                "currentMonthTotalInvest",currentMonthTotalInvest
+                );
     }
 }
