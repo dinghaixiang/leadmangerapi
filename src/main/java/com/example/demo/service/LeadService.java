@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dao.AuthContext;
 import com.example.demo.utils.MapUtils;
 import com.example.demo.utils.eql.Dql;
+import org.apache.log4j.Logger;
 import org.n3r.eql.EqlPage;
 import org.n3r.eql.EqlTran;
 import org.n3r.eql.util.Closes;
@@ -21,6 +22,7 @@ import java.util.*;
 public class LeadService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private DecimalFormat df = new DecimalFormat("#.00");
+    private static Logger log=Logger.getLogger(LeadService.class);
 
     public List<Map> getAllLead(EqlPage page) {
         return new Dql().select("getAllLead").params(MapUtils.of("userId", AuthContext.getUserId())).limit(page).execute();
@@ -322,7 +324,9 @@ public class LeadService {
 
     public List<Map> periodListInit(EqlPage page) {
         List<Map> leadList = new Dql().select("periodList").params(MapUtils.of("userId",AuthContext.getUserId())).limit(page).execute();
-        return addIncomeElm(leadList);
+        List<Map> correctLeadList=addIncomeElm(leadList);
+        log.debug("correctLeadList{}"+ correctLeadList);
+        return correctLeadList;
     }
 
     public int getOverDueNum() {
@@ -333,7 +337,9 @@ public class LeadService {
     public List<Map> getOverDue(Map param, EqlPage page) {
         param.put("userId",AuthContext.getUserId());
         List<Map> leadList = new Dql().select("periodList").params(param).limit(page).execute();
-        return addIncomeElm(leadList);
+        List<Map> correctLeadList=addIncomeElm(leadList);
+        log.debug("correctLeadList{}"+ correctLeadList);
+        return correctLeadList;
     }
 
     private List<Map> addIncomeElm(List<Map> leadList){
