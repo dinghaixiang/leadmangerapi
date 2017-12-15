@@ -161,6 +161,7 @@ SELECT
 	l. NAME 'name',
 	l.interest 'interest',
 	l.principal 'principal',
+	l.valid 'valid',
 	DATE_FORMAT(p.numStartTime,'%Y-%m-%d') 'numStartTime',
 	DATE_FORMAT(p.numEndTime,'%Y-%m-%d') 'numEndTime',
 	l.cycle 'cycle',
