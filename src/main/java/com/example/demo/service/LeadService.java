@@ -29,7 +29,9 @@ public class LeadService {
     public List<Map> getAllLead(EqlPage page) {
         return new Dql().select("getAllLead").params(MapUtils.of("userId", AuthContext.getUserId())).limit(page).execute();
     }
-
+    public List<Map> getOverDue(){
+        return new Dql().select("getAllLead").params(MapUtils.of("userId", AuthContext.getUserId(),"overDue","1")).execute();
+    }
     public List<Map> getLeadByCondition(Map map, EqlPage page) {
         map.put("userId",AuthContext.getUserId());
         return new Dql().select("getAllLead").params(map).limit(page).execute();

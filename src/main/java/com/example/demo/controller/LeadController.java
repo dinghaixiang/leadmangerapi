@@ -23,7 +23,7 @@ public class LeadController {
     @RequestMapping(value = "/init",method = RequestMethod.POST)
     public RspBean init(){
         EqlPage page = new EqlPage(0, 6);
-        return new RspBean(MapUtils.of("leadUser",service.getAllLead(page),"eqlPage",page));
+        return new RspBean(MapUtils.of("leadUser",service.getAllLead(page),"eqlPage",page,"overDueNum",service.getOverDue().size()));
     }
     @RequestMapping(value = "/list",method = RequestMethod.POST)
     public RspBean query(@RequestBody Map map){

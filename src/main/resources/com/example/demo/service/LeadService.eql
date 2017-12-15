@@ -18,6 +18,9 @@ FROM
     -- isNotEmpty valid
     and l.valid = #valid#
     -- end
+    -- isNotEmpty overDue
+    and l.endTime <= curdate()
+    -- end
     -- isEmpty valid
     and l.valid = '1'
     -- end
