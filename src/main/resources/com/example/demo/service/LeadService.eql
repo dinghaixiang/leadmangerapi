@@ -28,7 +28,8 @@ FROM
     and l.interestType = #interestType#
     -- end
     -- isNotEmpty name
-    and l.name like concat('%',#name#,'%')
+    and (l.name like concat('%',#name#,'%')
+    or l.id=#name#)
     -- end
     order by l.createTime
 
@@ -127,7 +128,7 @@ FROM
 insert into periods
 values
 -- for item=period index=index collection=periodList separator=,
-(#period.id#,#period.num#,STR_TO_DATE(#period.numStartTime#,'%Y-%m-%d'),STR_TO_DATE(#period.numEndTime#,'%Y-%m-%d'),'0','',#period.isLastNum#,#period.totalNum#)
+(#period.id#,#period.num#,STR_TO_DATE(#period.numStartTime#,'%Y-%m-%d'),STR_TO_DATE(#period.numEndTime#,'%Y-%m-%d'),'0','',#period.isLastNum#,#period.totalNum#,now(),now())
 -- end
 
 --[findPeriodById]
@@ -151,6 +152,7 @@ WHERE
 
 --[updatePayNum]
 update periods set payNo=#payNo#,
+updateTime = now(),
 payTag ='1'
 --if interestType == "1"
 ,numEndTime=now()
@@ -189,13 +191,14 @@ and p.payTag='0'
 and p.numEndTime <= now()
 --end
  -- isNotEmpty name
-    and l.name like concat('%',#name#,'%')
+    and (l.name like concat('%',#name#,'%')
+    or p.id = #name#)
  -- end
  -- isNotEmpty toTime
  and p.numEndTime <= DATE_ADD(now(),INTERVAL 7 DAY)
  and p.numEndTime > now()
 -- end
-order by p.numEndTime
+order by p.numEndTime,p.updateTime desc
 
 --[getIncome]
 SELECT
