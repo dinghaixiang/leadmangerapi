@@ -234,3 +234,20 @@ AND endTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
    AND startTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
 -- end
 and userId=#userId#
+
+--[queryCurrentMonthInvestComed]
+SELECT
+	principal 'principal',
+  totalprincipal 'totalPrincipal',
+  valid 'valid',
+  l.interestType 'interestType',
+  isLastNum 'isLastNum',
+  payTag 'payTag',
+  l.cycle 'cycle'
+FROM
+	leadinfo l,periods p
+WHERE
+p.id=l.id
+and	p.numEndTime >= DATE_FORMAT(#firstDayOfMonth#, '%Y-%m-%d')
+and p.numEndTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
+and userId=#userId#

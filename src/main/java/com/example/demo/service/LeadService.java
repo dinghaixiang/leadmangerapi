@@ -387,21 +387,31 @@ public class LeadService {
 
     public Map queryCurrentMonthInvest() {
         Map map = getFirstAndEndOfMonth(new Date());
-        map.put("type", "0");
         map.put("userId",AuthContext.getUserId());
         int currentMonthInvestComeing = 0, currentMonthTotalInvestComeing = 0,//当月应收
                 currentMonthInvestComed = 0, currentMonthTotalInvestComed = 0,//当月实收
                 currentMonthInvest = 0, currentMonthTotalInvest = 0;//当月新增投资
-        List<Map> list = new Dql().select("queryCurrentMonthInvest").params(map).execute();//当月应收回本金
+        List<Map> list = new Dql().select("queryCurrentMonthInvestComed").params(map).execute(); //当月应收金额
         map.put("type", "1");
         List<Map> list2 = new Dql().select("queryCurrentMonthInvest").params(map).execute();//当月投资本金
         for (Map monthInvest : list) {
-            if ("0".equals(MapUtils.getStr(monthInvest, "valid"))) {
-                currentMonthInvestComed += MapUtils.getInt(monthInvest, "principal");
-                currentMonthTotalInvestComed += MapUtils.getInt(monthInvest, "totalPrincipal");
+            if ("2".equals(MapUtils.getStr(monthInvest,"interestType"))){
+                currentMonthInvestComeing += MapUtils.getInt(monthInvest, "principal")/MapUtils.getInt(monthInvest,"cycle");
+                currentMonthTotalInvestComeing += MapUtils.getInt(monthInvest, "totalPrincipal")/MapUtils.getInt(monthInvest,"cycle");
+                if (!"0".equals(MapUtils.getStr(monthInvest, "payTag"))) {
+                    currentMonthInvestComed += MapUtils.getInt(monthInvest, "principal")/MapUtils.getInt(monthInvest,"cycle");
+                    currentMonthTotalInvestComed += MapUtils.getInt(monthInvest, "totalPrincipal")/MapUtils.getInt(monthInvest,"cycle");
+                }
+            } else {
+                if("1".equals(MapUtils.getStr(monthInvest,"isLastNum"))){
+                    currentMonthInvestComeing += MapUtils.getInt(monthInvest, "principal");
+                    currentMonthTotalInvestComeing += MapUtils.getInt(monthInvest, "totalPrincipal");
+                }
+                if("0".equals(MapUtils.getStr(monthInvest, "valid"))){
+                    currentMonthInvestComed += MapUtils.getInt(monthInvest, "principal");
+                    currentMonthTotalInvestComed += MapUtils.getInt(monthInvest, "totalPrincipal");
+                }
             }
-            currentMonthInvestComeing += MapUtils.getInt(monthInvest, "principal");
-            currentMonthTotalInvestComeing += MapUtils.getInt(monthInvest, "totalPrincipal");
         }
         for (Map monthInvest : list2) {
             currentMonthInvest += MapUtils.getInt(monthInvest, "principal");
