@@ -58,9 +58,9 @@ public class LeadService {
             periodList.add(MapUtils.of("id", id, "num", 1, "numStartTime", MapUtils.getStr(map, "startTime"), "numEndTime", MapUtils.getStr(map, "endTime"), "isLastNum", "1", "totalNum", "1"));
         }else if("2".equals(MapUtils.getStr(map,"interestType"))){
             int cycle = getInt(map, "cycle");
-            map.put("startTime", sdf.format(new Date()));
-            map.put("endTime", relatveDay(new Date(), cycle * 7));
-            Date now=new Date();
+            map.put("startTime",MapUtils.getStr(map, "startTime"));
+            map.put("endTime", relatveDay(MapUtils.getStr(map, "startTime"), cycle * 7));
+            Date now=parse(MapUtils.getStr(map, "startTime"));
             for(int i=0;i<cycle;i++){
                 String isLastNum = i == cycle - 1 ? "1" : "0";
                 periodList.add(MapUtils.of("id", id, "num", i + 1, "numStartTime", relatveDay(now, i*7), "numEndTime", relatveDay(now, (i + 1)*7), "isLastNum", isLastNum, "totalNum", cycle));
