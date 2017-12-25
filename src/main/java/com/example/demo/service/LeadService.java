@@ -286,7 +286,7 @@ public class LeadService {
                 if("1".equals(isLastNum)){
                     income+=totalPrincipal;
                 }
-                map.put("income",income);
+                map.put("income",df.format(income));
             }else if("1".equals(MapUtils.getStr(map,"interestType"))){
                 Date startTime = parse(MapUtils.getStr(map, "numStartTime"));
                 Date endTime = parse(MapUtils.getStr(map, "numEndTime"));
@@ -296,12 +296,12 @@ public class LeadService {
                 if("1".equals(isLastNum)){
                     income+=totalPrincipal;
                 }
-                map.put("income",income);
+                map.put("income",df.format(income));
             }else if("2".equals(MapUtils.getStr(map,"interestType"))){
                 int cycle = getInt(map, "cycle");
                 double income=totalPrincipal*interest*7/100;
                 income+=totalPrincipal/cycle;
-                map.put("income",income);
+                map.put("income",df.format(income));
             }
         });
         return periods;
