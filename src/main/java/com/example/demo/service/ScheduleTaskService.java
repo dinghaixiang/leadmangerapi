@@ -17,7 +17,7 @@ public class ScheduleTaskService {
     @Autowired
     private LeadService service;
 
-    @Scheduled(cron = "0 0 0 * * ?")//每天凌晨3:00执行任务
+    @Scheduled(cron = "0 0 0 * * ?")//每天凌晨0:00执行任务
     public void auto() {
         System.out.print("ScheduleTask=============start");
         AuthContext.setUserId("1");
