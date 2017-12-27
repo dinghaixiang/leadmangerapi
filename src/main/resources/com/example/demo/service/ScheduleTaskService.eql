@@ -1,0 +1,16 @@
+--[insertStatics]
+insert into statics values(
+now(),
+#totalIncome#,
+#haveIncomed#,
+#currentMonthIncome#,
+#currentMonthIncomeHaved#,
+#currentMonthTotalInvestComeing#,
+#currentMonthInvestComeing#,
+#currentMonthTotalInvestComed#,
+#currentMonthInvestComed#,
+#currentMonthTotalInvest#,
+#currentMonthInvest#,
+#netInvestmentTotal#,
+#netInvestment#
+)

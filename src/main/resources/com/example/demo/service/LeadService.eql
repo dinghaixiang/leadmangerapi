@@ -15,6 +15,7 @@ SELECT
 FROM
 	leadinfo l
 	where userId=#userId#
+	and l.state ='1'
     -- isNotEmpty valid
     and l.valid = #valid#
     -- end
@@ -67,7 +68,8 @@ INSERT INTO leadinfo (
 	interestType,
 	remark,
 	cycle,
-	userId
+	userId,
+	state
 )
 VALUES
 	(
@@ -85,7 +87,8 @@ VALUES
 		#interestType#,
 		#remark#,
 		#cycle#,
-		#userId#
+		#userId#,
+		'1'
 	)
 
 --[getAllLeadWithValid]
@@ -105,6 +108,7 @@ SELECT
 FROM
 	leadinfo l
 	where userId=#1#
+	and l.state='1'
 
 --[queryLeadWithTime]
 SELECT
@@ -123,12 +127,13 @@ FROM
 	leadinfo l
 	where l.endTime>=str_to_date(#firstDayOfMonth#,'%Y-%m-%d')
 	and startTime < STR_TO_DATE(#firstDayOfMonth#,'%Y-%m-%d')
+	and l.state='1'
 
 --[insertPeriods]
 insert into periods
 values
 -- for item=period index=index collection=periodList separator=,
-(#period.id#,#period.num#,STR_TO_DATE(#period.numStartTime#,'%Y-%m-%d'),STR_TO_DATE(#period.numEndTime#,'%Y-%m-%d'),'0','',#period.isLastNum#,#period.totalNum#,now(),now())
+(#period.id#,#period.num#,STR_TO_DATE(#period.numStartTime#,'%Y-%m-%d'),STR_TO_DATE(#period.numEndTime#,'%Y-%m-%d'),'0','',#period.isLastNum#,#period.totalNum#,now(),now(),'1')
 -- end
 
 --[findPeriodById]
@@ -149,6 +154,8 @@ WHERE
 	p.id = lf.id
 	and p.id=#id#
 	and lf.userId=#userId#
+	and p.state='1'
+	and lf.state='1'
 
 --[updatePayNum]
 update periods set payNo=#payNo#,
@@ -180,6 +187,8 @@ SELECT
     p.payNo 'payNo'
 FROM leadinfo l,periods p
 where l.id=p.id
+and l.state='1'
+and p.state='1'
 and l.userId=#userId#
 -- isNotEmpty payTag
 and p.payTag=#payTag#
@@ -216,6 +225,8 @@ FROM
 WHERE
 	l.id = p.id
 	and userId=#1#
+	and l.state='1'
+	and p.state='1'
 
 --[queryCurrentMonthInvest]
 SELECT
@@ -234,6 +245,7 @@ AND endTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
    AND startTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
 -- end
 and userId=#userId#
+and state='1'
 
 --[queryCurrentMonthInvestComed]
 SELECT
@@ -251,3 +263,5 @@ p.id=l.id
 and	p.numEndTime >= DATE_FORMAT(#firstDayOfMonth#, '%Y-%m-%d')
 and p.numEndTime <= DATE_FORMAT(#lastDayOfMonth#, '%Y-%m-%d')
 and userId=#userId#
+and l.state='1'
+and p.state='1'
