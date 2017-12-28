@@ -45,6 +45,18 @@ updateTime = now()
 WHERE
 	id =#id#
 
+--[updateLeadState]
+Update leadinfo
+set state = '0',
+updateTime = now()
+where id=#1#
+
+--[updatePeriodState]
+Update periods
+set state = '0',
+updateTime = now()
+where id=#1#
+
 --[findLeadById]
 select interestType 'interestType',
   cast(id as char(20)) 'id'

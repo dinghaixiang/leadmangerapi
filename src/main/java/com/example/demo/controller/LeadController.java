@@ -35,6 +35,11 @@ public class LeadController {
         return new RspBean(service.settle(map.get("id").toString()));
     }
 
+    @RequestMapping(value = "/delete-period-lead",method = RequestMethod.POST)
+    public RspBean delete(@RequestBody Map map){
+        return new RspBean(service.deletePeriod(map.get("id").toString()));
+    }
+
     @RequestMapping(value="/save",method = RequestMethod.POST)
     public RspBean save(@RequestBody Map param){
         return new RspBean(service.save(param));

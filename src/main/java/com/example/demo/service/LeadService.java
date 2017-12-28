@@ -42,6 +42,22 @@ public class LeadService {
         return new Dql().update("settleLead").params(map).execute();
     }
 
+    public Integer deletePeriod(String id) {
+        EqlTran eqlTran= new Dql().newTran();
+        try {
+            new Dql().useTran(eqlTran).update("updatePeriodState").params(id).execute();
+            new Dql().useTran(eqlTran).update("updateLeadState").params(id).execute();
+            eqlTran.commit();
+            return 1;
+        }catch (Exception e){
+            eqlTran.rollback();
+            e.printStackTrace();
+            return 0;
+        }finally {
+            Closes.closeQuietly(eqlTran);
+        }
+    }
+
     public Integer save(Map map) {
         List periodList = new ArrayList();
         long id = Id.next();
