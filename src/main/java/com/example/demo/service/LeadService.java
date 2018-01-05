@@ -210,7 +210,7 @@ public class LeadService {
                 totalIncome += 7 * (double) map.get("interest") * (double) map.get("totalPrincipal");
             }
         }
-        return MapUtils.of("currentMonthIncome", totalIncome / 100, "currentMonthIncomeHaved", haveIncome / 100);
+        return MapUtils.of("currentMonthIncome", df.format(totalIncome / 100), "currentMonthIncomeHaved", df.format(haveIncome / 100));
     }
 
     private Map monthIncome(List<Map> list,Date date){
