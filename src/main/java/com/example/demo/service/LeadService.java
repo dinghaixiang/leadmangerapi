@@ -113,8 +113,8 @@ public class LeadService {
                     List<Map> periodsList = new Dql().select("findPeriodById").params(MapUtils.of("userId",AuthContext.getUserId(),"id",MapUtils.getStr(leadUser,"id"))).execute();
                     //已经还了size 期
                     int size= periodsList.stream().filter(period -> "1".equals(MapUtils.getStr(period, "payTag")) || "2".equals(MapUtils.getStr(period, "payTag"))).collect(Collectors.toList()).size();
-                    totalInvestComed +=size/MapUtils.getInt(leadUser,"cycle")*getInt(leadUser, "totalPrincipal");
-                    mineTotalInvestComed +=size/MapUtils.getInt(leadUser,"cycle")*getInt(leadUser, "principal");
+                    totalInvestComed +=size*getInt(leadUser, "totalPrincipal")/MapUtils.getInt(leadUser,"cycle");
+                    mineTotalInvestComed +=size*getInt(leadUser, "principal")/MapUtils.getInt(leadUser,"cycle");
                 }
             }
         }
