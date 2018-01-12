@@ -14,6 +14,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.demo.utils.MapUtils.getInt;
 
@@ -104,9 +105,17 @@ public class LeadService {
         for (Map leadUser : leadUserList) {
             totalInvest += getInt(leadUser, "totalPrincipal");
             mineTotalInvest += getInt(leadUser, "principal");
-            if ("0".equals(MapUtils.getStr(leadUser, "valid"))) {
+            if ("0".equals(MapUtils.getStr(leadUser, "valid"))) { //0是还清
                 totalInvestComed += getInt(leadUser, "totalPrincipal");
                 mineTotalInvestComed += getInt(leadUser, "principal");
+            }else {
+                if("2".equals(MapUtils.getStr(leadUser,"interestType"))){
+                    List<Map> periodsList = new Dql().select("findPeriodById").params(MapUtils.of("userId",AuthContext.getUserId(),"id",MapUtils.getStr(leadUser,"id"))).execute();
+                    //已经还了size 期
+                    int size= periodsList.stream().filter(period -> "1".equals(MapUtils.getStr(period, "payTag")) || "2".equals(MapUtils.getStr(period, "payTag"))).collect(Collectors.toList()).size();
+                    totalInvestComed +=size/MapUtils.getInt(leadUser,"cycle")*getInt(leadUser, "totalPrincipal");
+                    mineTotalInvestComed +=size/MapUtils.getInt(leadUser,"cycle")*getInt(leadUser, "principal");
+                }
             }
         }
         Map map = haveIncomed();
