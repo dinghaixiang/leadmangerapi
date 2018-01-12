@@ -14,3 +14,12 @@ now(),
 #netInvestmentTotal#,
 #netInvestment#
 )
+
+--[insertInvestStatics]
+insert into investstatics values(
+now(),
+#totalInvest#,
+#mineTotalInvest#,
+#totalInvestComed#,
+#mineTotalInvestComed#
+)

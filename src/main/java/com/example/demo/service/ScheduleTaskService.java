@@ -25,6 +25,7 @@ public class ScheduleTaskService {
         map.put("netInvestmentTotal", MapUtils.getInt(map,"currentMonthTotalInvest")-MapUtils.getInt(map,"currentMonthTotalInvestComed"));
         map.put("netInvestment", MapUtils.getInt(map,"currentMonthInvest")-MapUtils.getInt(map,"currentMonthInvestComed"));
         new Dql().insert("insertStatics").params(map).execute();
+        new Dql().insert("insertInvestStatics").params(map).execute();
         System.out.print("ScheduleTask=============end");
     }
 }
