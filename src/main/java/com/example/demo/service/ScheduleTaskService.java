@@ -20,7 +20,7 @@ public class ScheduleTaskService {
     @Scheduled(cron = "0 0 0 * * ?")//每天凌晨0:00执行任务
     public void auto() {
         System.out.print("ScheduleTask=============start");
-        AuthContext.setUserId("1");
+        AuthContext.setUserId("3");
         Map map=service.income();
         map.put("netInvestmentTotal", MapUtils.getInt(map,"currentMonthTotalInvest")-MapUtils.getInt(map,"currentMonthTotalInvestComed"));
         map.put("netInvestment", MapUtils.getInt(map,"currentMonthInvest")-MapUtils.getInt(map,"currentMonthInvestComed"));
